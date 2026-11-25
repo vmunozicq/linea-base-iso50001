@@ -12,4 +12,8 @@
 - ISO 50001:2018, Sistemas de gestión de la energía. Requisitos con orientación para su uso.
 - ISO 50006:2023, Medición del desempeño energético usando líneas base energéticas (LBE) e indicadores de desempeño energético (IDEn).
 - ASHRAE Guideline 14-2014, Measurement of Energy, Demand, and Water Savings.
+- "Thermal and climatic zoning for construction", Advances in Science and Research 15, 63 (2018).
+  https://asr.copernicus.org/articles/15/63/2018/ (base 15 °C de la zonificación térmica MINVU).
+- MINVU, Manual de Aplicación Reglamentación Térmica, OGUC art. 4.1.10.
+- ASHRAE Handbook—Fundamentals (grados día base 65 °F ≈ 18,3 °C).
 - Montgomery, D. C., *Introduction to Statistical Quality Control*, Wiley (capítulo de CUSUM).

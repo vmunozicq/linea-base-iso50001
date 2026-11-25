@@ -1,6 +1,6 @@
 # MODELO.md — Línea base energética (ISO 50001 / ISO 50006)
 
-> **Estado: borrador para revisión de Vicente.** Claude Code escribió el código y este borrador.
+> **Estado: supuestos S y M validados por Vicente (2026-11-25); redacción de hallazgos H pendiente.** Claude Code escribió el código y este borrador.
 > Los supuestos, ecuaciones y criterios son de Vicente: cada ítem marcado **[REVISAR]** debe
 > confirmarse, corregirse o justificarse antes de publicar el repositorio.
 
@@ -23,19 +23,24 @@ variables relevantes).
 
 Supuestos de datos:
 
-- **S-01 [REVISAR]** Planta ficticia con `E = 85 000 + 110·P + 420·GDR + 160·GDC + ε`, ε ~ N(0; 4 000 kWh).
+- **S-01** Planta ficticia con `E = 85 000 + 110·P + 420·GDR + 160·GDC + ε`, ε ~ N(0; 4 000 kWh).
   Son órdenes de magnitud plausibles para una planta de alimentos/química liviana con refrigeración,
   no datos de una planta real. ¿Los ajustamos a algo que conozcas (por ejemplo, kWh/t típico de un rubro)?
-- **S-02 [REVISAR]** Eventos sembrados en el periodo de reporte: variadores de frecuencia en chillers
+- **S-02** Eventos sembrados en el periodo de reporte: variadores de frecuencia en chillers
   desde 2023-07 (−5 % del consumo) y fuga de aire comprimido 2024-05 a 2024-07 (+14 000 kWh/mes).
 - **S-03** Producción con estacionalidad (±90 t) y +8 % en 2024, para mostrar por qué el EnPI de
   cociente simple (kWh/t) engaña.
-- **S-04 [REVISAR]** Bases de grados día: 15 °C para calefacción y 18 °C para refrigeración. Son
-  convenciones; ISO 50006 sugiere estimar el punto de equilibrio de la propia instalación
-  (regresión por tramos o *change-point*). Falta citar la convención chilena que prefieras.
+- **S-04** Bases de grados día (validado por Vicente 2026-11-25):
+  - Calefacción, base 15 °C: es la base de los grados día de calefacción con que la Reglamentación
+    Térmica del MINVU (OGUC art. 4.1.10) define las zonas térmicas de Chile, según el artículo
+    "Thermal and climatic zoning for construction" (Advances in Science and Research 15, 63–2018, §2.1).
+  - Refrigeración, base 18 °C: Chile no fija una base oficial para refrigeración. Se usa la convención
+    de ASHRAE (65 °F ≈ 18,3 °C, ASHRAE Handbook—Fundamentals, cap. clima), redondeada a 18 °C.
+  - ISO 50006 sugiere estimar el punto de equilibrio propio de cada instalación; aquí se usan
+    convenciones porque la planta es ficticia. Trabajo futuro: modelo por tramos (*change-point*).
 - **S-05** Open-Meteo es reanálisis en grilla, no una estación DMC. Para un caso real conviene la
   estación de Quinta Normal o Pudahuel (Dirección Meteorológica de Chile).
-- **S-06 [REVISAR]** Los meses no se normalizan por número de días; la carga base se modela como
+- **S-06** Los meses no se normalizan por número de días; la carga base se modela como
   kWh/mes constante. Alternativa: agregar `dias` como variable.
 
 ## 3. Modelo
@@ -50,7 +55,7 @@ E_esperado = b0 + b1·P + b2·GDR + b3·GDC
   bajar el consumo). Se recomienda la admisible con mayor R² ajustado.
 - **M-03** Intervalo de predicción 95 % para cada mes (incluye incertidumbre del ajuste y del ruido).
 
-### 3.2 Criterios de aceptación **[REVISAR]**
+### 3.2 Criterios de aceptación
 
 ISO 50006 exige que el modelo sea estadísticamente válido pero no fija umbrales numéricos. Se
 tomaron de ASHRAE Guideline 14-2014 (datos mensuales) y práctica habitual:
@@ -78,10 +83,10 @@ CV(RMSE) = √(Σe²/(n−p−1)) / Ē  NMBE = Σe / ((n−p−1)·Ē)
 - **Mes fuera del IP 95 %**: desviación puntual.
 - **CUSUM tabular de Page** (Montgomery, *Introduction to Statistical Quality Control*, cap. 9):
   C⁺ᵢ = máx(0; C⁺ᵢ₋₁ + eᵢ − μ − K), C⁻ᵢ = máx(0; C⁻ᵢ₋₁ − (eᵢ − μ) − K), con K = k·σ y H = h·σ.
-  - **M-09 [REVISAR]** k = 0,5 y h = 4 (ARL₀ ≈ 168 meses, detecta un cambio de 1σ en ~8,4 meses).
-  - **M-10 [REVISAR]** σ = desviación residual del ajuste base. Fuera de muestra el error real es algo
+  - **M-09** k = 0,5 y h = 4 (ARL₀ ≈ 168 meses, detecta un cambio de 1σ en ~8,4 meses).
+  - **M-10** σ = desviación residual del ajuste base. Fuera de muestra el error real es algo
     mayor (incertidumbre de los coeficientes), así que la tasa de falsas alarmas puede ser mayor a la nominal.
-  - **M-11 [REVISAR]** Tras cada alarma se *recentra*: la nueva referencia μ es el nivel estimado
+  - **M-11** Tras cada alarma se *recentra*: la nueva referencia μ es el nivel estimado
     (μ ± K ± C/N) y se reinician los acumuladores. Sin esto, una mejora ya confirmada oculta una
     pérdida posterior (la fuga de 2024 no se detectaba).
 
@@ -115,9 +120,9 @@ Como los datos son sintéticos, sabemos qué debía encontrar el modelo. Todo es
 
 ## 5. Lista de revisión para Vicente
 
-- [ ] S-01, S-02: magnitudes de la planta y de los eventos.
-- [ ] S-04: bases de grados día y su referencia.
-- [ ] S-06: normalizar o no por días del mes.
-- [ ] M-04 a M-08: criterios de aceptación y sus fuentes.
-- [ ] M-09 a M-11: parámetros del CUSUM tabular y recentrado.
+- [x] S-01, S-02: magnitudes de la planta y de los eventos (se mantienen).
+- [x] S-04: bases de grados día y su referencia.
+- [x] S-06: no se normaliza por días; queda como limitación declarada.
+- [x] M-04 a M-08: criterios ASHRAE G14 (se mantienen).
+- [x] M-09 a M-11: k = 0,5, h = 4 y recentrado (se mantienen).
 - [ ] H-1 a H-4: redacción de los hallazgos en tus palabras.

@@ -111,8 +111,9 @@ Como los datos son sintéticos, sabemos qué debía encontrar el modelo. Todo es
   así que constante y pendiente se confunden entre sí. El modelo **predice bien** (error < 3,1 %)
   pero sus coeficientes **no deben leerse** como "carga base" ni "consumo específico" físicos.
   Es una lección útil para el video: buena predicción ≠ coeficientes interpretables.
-- **H-2** El EnPI de cociente (kWh/t) baja 5,2 % en 2024 respecto del periodo base, pero parte de eso
-  es dilución de la carga base por +8 % de producción. El EnPI normalizado da −3,2 % en todo el reporte.
+- **H-2** El EnPI de cociente (kWh/t) baja 5,3 % en 2024 respecto del periodo base, pero parte de eso
+  es dilución de la carga base por +8 % de producción. El ahorro normalizado de 2024 es 4,5 %
+  (3,2 % en todo 2023–2024).
 - **H-3** Tras la primera alarma de mejora, la referencia recentrada (−7 500 kWh) subestima el nuevo
   nivel real (≈ −11 000), lo que genera una segunda alarma de mejora en 2024-02. Es un retardo
   conocido del recentrado; se podría usar la media de los meses posteriores a la alarma.

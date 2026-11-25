@@ -1,5 +1,9 @@
 # Línea base energética ISO 50001 con CUSUM
 
+[![Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://linea-base-iso50001.streamlit.app)
+
+**App en línea: https://linea-base-iso50001.streamlit.app** (si está dormida, pulsa el botón para despertarla; tarda unos 30 s).
+
 App en Streamlit que construye la **línea base energética** de una planta por regresión (consumo vs
 producción y grados día), calcula los **EnPI** según ISO 50001 / ISO 50006, cuantifica el **ahorro
 normalizado** y detecta **cambios de desempeño** con CUSUM.

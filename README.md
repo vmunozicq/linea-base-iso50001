@@ -23,8 +23,18 @@ normalizado** y detecta **cambios de desempeño** con CUSUM.
 3. **EnPI**: normalizado (real/esperado) y de cociente simple (kWh/t), para mostrar por qué el segundo engaña.
 4. **CUSUM** de diferencias y **CUSUM tabular de Page** con recentrado tras cada alarma.
 5. **Desviaciones**: meses fuera del intervalo de predicción 95 % y alarmas del CUSUM.
-6. **Exporta a Excel** resultados, selección de modelo, validación y coeficientes.
-7. Acepta un **CSV propio** (columna `mes` AAAA-MM + consumo + variables).
+6. **Valoriza en pesos** el ahorro y las pérdidas detectadas (precio editable; por defecto, el Precio
+   Medio de Mercado de la CNE, que es un mínimo conservador).
+7. **Exporta a Excel** resultados, selección de modelo, validación y coeficientes.
+8. Acepta un **CSV propio**: descarga la plantilla desde la barra lateral, reemplaza las filas con los
+   datos de tu planta (mínimo 12 meses de periodo base) y súbela.
+
+## Por qué importa en Chile
+
+La [Ley 21.305](https://www.bcn.cl/leychile/navegar?idNorma=1155887) obliga a las empresas que consumen
+más de 50 Tcal/año (≈ 58 GWh) a implementar un sistema de gestión de energía con indicadores de
+desempeño y medición y verificación. Esta app hace ese núcleo: línea base, EnPI y seguimiento.
+La planta de demostración es mucho más chica que ese umbral.
 
 ![CUSUM](docs/app_cusum.png)
 
@@ -38,7 +48,8 @@ Como los datos son sintéticos, se sabe qué debía encontrar el modelo:
 | Cobertura IC95 de coeficientes (300 réplicas Monte Carlo) | 90–99 % |
 | Ahorro 2023–2024 | Estimado 173 MWh vs verdadero 161 MWh |
 | Mejora sembrada (VDF en chillers, desde 2023-07) | Detectada en 2023-09 |
-| Fuga de aire comprimido (2024-05 a 07) | Detectada en 2024-05, sin falsas alarmas previas |
+| Fuga de aire comprimido (2024-05 a 07) | Detectada en 2024-05, sin falsas alarmas previas, aunque ese mes quedó dentro del intervalo de predicción |
+| Costo estimado de la fuga | 30 MWh ≈ 2,9 millones CLP (verdadero: 42 MWh) |
 
 Detalle, supuestos y limitaciones en [MODELO.md](MODELO.md).
 
@@ -48,7 +59,7 @@ Detalle, supuestos y limitaciones en [MODELO.md](MODELO.md).
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
-pytest -q          # 12 tests
+pytest -q          # 13 tests
 python scripts/generar_datos_sinteticos.py   # regenera los datos de demostración
 ```
 

@@ -136,3 +136,9 @@ def test_errores_de_entrada():
         ajustar_linea_base(df, "y", [])
     with pytest.raises(ValueError):
         ajustar_linea_base(df, "y", ["x"])
+
+
+def test_plantilla_tiene_columnas_de_la_demo(datos):
+    plantilla = pd.read_csv(RAIZ / "data" / "plantilla_entrada.csv")
+    assert set(plantilla.columns) <= set(datos.columns)
+    assert {"mes", "consumo_kwh"} <= set(plantilla.columns)

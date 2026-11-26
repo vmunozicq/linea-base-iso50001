@@ -14,6 +14,11 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from lb50001 import analizar, seleccionar_modelo, validar_modelo  # noqa: E402
 
 DATOS_DEMO = Path(__file__).parent / "data" / "planta_sintetica.csv"
+PLANTILLA = Path(__file__).parent / "data" / "plantilla_entrada.csv"
+# Precio Medio de Mercado del SEN (CNE, publicación 07-oct-2026, ventana abr–jul 2026).
+# Es precio de energía mayorista: no incluye potencia, transmisión ni distribución,
+# así que el costo valorizado es un mínimo conservador (supuesto E-01 en MODELO.md).
+PRECIO_REF_CLP_KWH = 96.77
 
 st.set_page_config(page_title="Línea base ISO 50001", layout="wide")
 st.title("Línea base energética y CUSUM (ISO 50001 / ISO 50006)")
@@ -28,6 +33,9 @@ with st.sidebar:
     df = pd.read_csv(archivo) if archivo else pd.read_csv(DATOS_DEMO)
     if not archivo:
         st.info("Usando datos de demostración (sintéticos).")
+    st.download_button("Descargar plantilla CSV", PLANTILLA.read_bytes(), "plantilla_linea_base.csv",
+                       "text/csv", help="Una fila por mes. Reemplaza las filas de ejemplo con los datos de tu "
+                       "planta (mínimo 12 meses de periodo base). Puedes renombrar o agregar variables.")
     df["mes"] = df["mes"].astype(str)
     numericas = [c for c in df.select_dtypes("number").columns if c != "dias"]
     y = st.selectbox("Consumo energético", numericas,
@@ -46,6 +54,11 @@ with st.sidebar:
     k = st.number_input("k (holgura, × σ)", 0.1, 2.0, 0.5, 0.1)
     h = st.number_input("h (umbral, × σ)", 1.0, 10.0, 4.0, 0.5)
     recentrar = st.checkbox("Recentrar tras cada alarma", True)
+
+    st.header("4. Valorización")
+    precio = st.number_input("Precio de la energía (CLP/kWh)", 0.0, 1000.0, PRECIO_REF_CLP_KWH, 1.0,
+                             help="Por defecto: Precio Medio de Mercado SEN, CNE (oct-2026). Solo energía; "
+                             "una tarifa industrial real es mayor, así que el valor resultante es conservador.")
 
 if not candidatas:
     st.warning("Elige al menos una variable relevante.")
@@ -110,10 +123,11 @@ with tab2:
     st.subheader("Indicadores de desempeño energético (periodo de reporte)")
     if len(rep):
         ahorro = rep["ahorro"].sum()
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3, c4 = st.columns(4)
         c1.metric("Ahorro acumulado", f"{ahorro:,.0f}", help="Σ(esperado − real)")
-        c2.metric("Ahorro relativo", f"{ahorro / rep['esperado'].sum():.1%}")
-        c3.metric("EnPI normalizado medio (real/esperado)", f"{rep['enpi_indice'].mean():.3f}")
+        c2.metric("Ahorro valorizado (CLP)", f"$ {ahorro * precio:,.0f}".replace(",", "."))
+        c3.metric("Ahorro relativo", f"{ahorro / rep['esperado'].sum():.1%}")
+        c4.metric("EnPI normalizado medio", f"{rep['enpi_indice'].mean():.3f}", help="real / esperado")
     fig = go.Figure()
     fig.add_scatter(x=out["mes"], y=out["enpi_indice"], name="Real / esperado", mode="lines+markers")
     fig.add_hline(y=1, line_dash="dot")
@@ -150,9 +164,32 @@ with tab4:
     cols = ["mes", y, "esperado", "diferencia", "fuera_ip", "alarma_aumento", "alarma_mejora"]
     if "evento_sembrado" in rep:
         cols.append("evento_sembrado")
-    marcados = rep[rep["fuera_ip"] | rep["alarma_aumento"] | rep["alarma_mejora"]][cols]
-    st.dataframe(marcados.style.format({y: "{:,.0f}", "esperado": "{:,.0f}", "diferencia": "{:+,.0f}"}),
+    marcados = rep[rep["fuera_ip"] | rep["alarma_aumento"] | rep["alarma_mejora"]][cols].copy()
+    marcados.insert(4, "diferencia_clp", marcados["diferencia"] * precio)
+    st.dataframe(marcados.style.format({y: "{:,.0f}", "esperado": "{:,.0f}", "diferencia": "{:+,.0f}",
+                                        "diferencia_clp": "{:+,.0f}"}),
                  use_container_width=True, hide_index=True)
+
+    # Pérdida mientras dura un aumento sostenido: desde la alarma C+ hasta la siguiente alarma de mejora,
+    # medida contra el nivel medio de la diferencia en los 6 meses previos a la alarma (supuesto E-02).
+    alarmas = list(rep.index[rep["alarma_aumento"]])
+    if alarmas:
+        st.subheader("Costo de las pérdidas detectadas")
+        filas = []
+        for i in alarmas:
+            nivel = rep.loc[:i, "diferencia"].iloc[:-1].tail(6).mean()
+            tramo = rep.loc[i:]
+            fin_idx = tramo.index[tramo["alarma_mejora"]]
+            tramo = tramo.loc[: fin_idx[0]] if len(fin_idx) else tramo
+            exceso = (tramo["diferencia"] - nivel).clip(lower=0)
+            filas.append({"detectada": rep.loc[i, "mes"], "hasta": tramo["mes"].iloc[-1],
+                          "nivel_previo_kwh": nivel, "exceso_kwh": exceso.sum(),
+                          "costo_clp": exceso.sum() * precio})
+        st.dataframe(pd.DataFrame(filas).style.format({"nivel_previo_kwh": "{:+,.0f}", "exceso_kwh": "{:,.0f}",
+                                                       "costo_clp": "$ {:,.0f}"}),
+                     use_container_width=True, hide_index=True)
+        st.caption("Exceso = consumo sobre el nivel medio de los 6 meses previos a la alarma, desde la "
+                   "alarma hasta la siguiente alarma de mejora. Es una estimación: el ruido mensual la afecta.")
     st.caption("fuera_ip: el mes cae fuera del intervalo de predicción 95 %. "
                "alarma_*: el CUSUM tabular superó H (cambio sostenido).")
 

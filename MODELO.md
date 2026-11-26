@@ -90,6 +90,17 @@ CV(RMSE) = √(Σe²/(n−p−1)) / Ē  NMBE = Σe / ((n−p−1)·Ē)
     (μ ± K ± C/N) y se reinician los acumuladores. Sin esto, una mejora ya confirmada oculta una
     pérdida posterior (la fuga de 2024 no se detectaba).
 
+### 3.5 Valorización en pesos
+
+- **E-01** Precio por defecto: 96,77 CLP/kWh, el Precio Medio de Mercado del SEN publicado por la CNE
+  el 7 de octubre de 2026 (ventana abril–julio 2026). Es un precio de energía mayorista: no incluye
+  potencia, transmisión ni distribución, así que los montos en CLP son un **mínimo conservador**.
+  El usuario puede cambiarlo en la app.
+- **E-02** Costo de una pérdida detectada: exceso de la diferencia (real − esperado) sobre su nivel medio
+  de los 6 meses previos a la alarma C⁺, sumado desde la alarma hasta la siguiente alarma de mejora.
+  En la demo da 30,2 MWh (≈ 2,9 millones CLP) frente a 42 MWh verdaderos: el ruido de junio de 2024
+  (−10 MWh) oculta parte de la fuga. Es una estimación, no una medición.
+
 ## 4. Validación (contra la "verdad" del generador)
 
 Como los datos son sintéticos, sabemos qué debía encontrar el modelo. Todo esto está en `tests/`.
@@ -117,13 +128,29 @@ Como los datos son sintéticos, sabemos qué debía encontrar el modelo. Todo es
 - **H-3** Tras la primera alarma de mejora, la referencia recentrada (−7 500 kWh) subestima el nuevo
   nivel real (≈ −11 000), lo que genera una segunda alarma de mejora en 2024-02. Es un retardo
   conocido del recentrado; se podría usar la media de los meses posteriores a la alarma.
+- **H-5** La fuga no aparece como mes anómalo: en mayo de 2024 el consumo real quedó *dentro* del
+  intervalo de predicción, porque el ahorro de los variadores la compensaba. Solo el CUSUM recentrado
+  la detecta. Valorizada a precio de energía mayorista, costó al menos ≈ 2,9 millones CLP.
 - **H-4** Falta la incertidumbre del ahorro (ASHRAE G14, ec. 4-6 / IPMVP). Trabajo futuro.
 
-## 5. Lista de revisión para Vicente
+## 5. Contexto en Chile: Ley 21.305
+
+La Ley 21.305 sobre Eficiencia Energética (D.O. 13-02-2021), art. 2°, define como Consumidores con
+Capacidad de Gestión de Energía (CCGE) a las empresas con consumo de energía para uso final sobre
+50 Tcal anuales (≈ 58 GWh). Los CCGE deben implementar, dentro de 12 meses desde su publicación en el
+listado anual, un Sistema de Gestión de Energía que cubra al menos el 80 % de su consumo e incluya
+indicadores de desempeño energético y medición y verificación. También pueden cumplir certificando una
+norma de gestión de energía del INN o su equivalente internacional (ISO 50001).
+
+La planta ficticia consume ≈ 2,7 GWh/año de electricidad, **muy por debajo** del umbral: no sería CCGE.
+El método es el mismo que usaría un CCGE; la escala no.
+
+## 6. Lista de revisión para Vicente
 
 - [x] S-01, S-02: magnitudes de la planta y de los eventos (se mantienen).
 - [x] S-04: bases de grados día y su referencia.
 - [x] S-06: no se normaliza por días; queda como limitación declarada.
 - [x] M-04 a M-08: criterios ASHRAE G14 (se mantienen).
 - [x] M-09 a M-11: k = 0,5, h = 4 y recentrado (se mantienen).
-- [ ] H-1 a H-4: redacción de los hallazgos en tus palabras.
+- [ ] H-1 a H-5: redacción de los hallazgos en tus palabras.
+- [ ] E-01, E-02: precio de referencia y método de costo de la fuga.

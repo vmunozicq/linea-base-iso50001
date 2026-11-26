@@ -8,6 +8,12 @@
 - **Datos sintéticos**: `data/planta_sintetica.csv`, generado por `scripts/generar_datos_sinteticos.py`
   (semilla 50001). No corresponden a ninguna planta real.
 
+## Precio y regulación
+- Comisión Nacional de Energía, "Precio Medio de Mercado Sistema Eléctrico Nacional", publicación del
+  07-10-2026 (ventana abril–julio 2026): PMM SEN 96,772 $/kWh.
+  https://www.cne.cl/wp-content/uploads/2026/10/Precio_Medio_de_Mercado-1.pdf — consultado el 2026-11-25.
+- Ley 21.305 sobre Eficiencia Energética, art. 2°. https://www.bcn.cl/leychile/navegar?idNorma=1155887
+
 ## Normas y método (no se reproduce texto de normas)
 - ISO 50001:2018, Sistemas de gestión de la energía. Requisitos con orientación para su uso.
 - ISO 50006:2023, Medición del desempeño energético usando líneas base energéticas (LBE) e indicadores de desempeño energético (IDEn).
